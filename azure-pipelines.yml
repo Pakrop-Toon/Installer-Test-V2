@@ -24,7 +24,7 @@ resources:
   repositories:
   - repository: WinFormTest1
     type: github
-    endpoint: <YOUR_GITHUB_SERVICE_CONNECTION>
+    endpoint: Pakrop-Toon
     name: Pakrop-Toon/WinFormTest1
     trigger:
       branches:
@@ -34,7 +34,7 @@ resources:
   
   - repository: WinFormTest2
     type: github
-    endpoint: <YOUR_GITHUB_SERVICE_CONNECTION>
+    endpoint: Pakrop-Toon
     name: Pakrop-Toon/WinFormTest2
     trigger:
       branches:
