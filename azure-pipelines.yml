@@ -19,29 +19,6 @@ pr:
     - dev
     - main
 
-# Additional resources to trigger on submodule repository changes
-resources:
-  repositories:
-  - repository: WinFormTest1
-    type: github
-    endpoint: Pakrop-Toon
-    name: Pakrop-Toon/WinFormTest1
-    trigger:
-      branches:
-        include:
-        - dev
-        - main
-  
-  - repository: WinFormTest2
-    type: github
-    endpoint: Pakrop-Toon
-    name: Pakrop-Toon/WinFormTest2
-    trigger:
-      branches:
-        include:
-        - dev
-        - main
-
 pool:
   vmImage: 'windows-latest'
 
@@ -55,16 +32,6 @@ steps:
   submodules: true
   persistCredentials: true
   displayName: 'Checkout main repository with submodules'
-
-# Checkout WinFormTest1 (in case triggered by submodule)
-- checkout: WinFormTest1
-  displayName: 'Checkout WinFormTest1'
-  condition: eq(variables['Build.Repository.Name'], 'Pakrop-Toon/WinFormTest1')
-
-# Checkout WinFormTest2 (in case triggered by submodule)
-- checkout: WinFormTest2
-  displayName: 'Checkout WinFormTest2'
-  condition: eq(variables['Build.Repository.Name'], 'Pakrop-Toon/WinFormTest2')
 
 # Install .NET 9 SDK
 - task: UseDotNet@2
