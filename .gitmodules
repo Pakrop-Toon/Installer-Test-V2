@@ -1,0 +1,8 @@
+[submodule "WinFormTest1"]
+	path = WinFormTest1
+	url = https://github.com/Pakrop-Toon/WinFormTest1.git
+	branch = dev
+[submodule "WinFormTest2"]
+	path = WinFormTest2
+	url = https://github.com/Pakrop-Toon/WinFormTest2.git
+	branch = dev
