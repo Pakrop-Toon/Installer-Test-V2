@@ -34,12 +34,11 @@ steps:
   displayName: 'Checkout main repository with submodules'
 
 # Install .NET 9 SDK
-- task: UseDotNetCore@2
+- task: UseDotNet@2
   displayName: 'Install .NET 9 SDK'
   inputs:
     packageType: 'sdk'
     version: '9.x'
-    installationPath: $(Agent.ToolsDirectory)/dotnet
 
 # Restore NuGet packages for WinFormsApp1
 - task: DotNetCoreCLI@2
