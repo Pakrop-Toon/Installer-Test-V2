@@ -1,0 +1,133 @@
+# Azure Pipeline for Installer-Test-V2
+# Main repo with two submodules: WinFormTest1 and WinFormTest2
+
+# Trigger on main repository changes
+trigger:
+  branches:
+    include:
+    - dev
+    - main
+  paths:
+    exclude:
+    - README.md
+    - docs/*
+
+# Trigger on Pull Requests
+pr:
+  branches:
+    include:
+    - dev
+    - main
+
+# Additional resources to trigger on submodule repository changes
+resources:
+  repositories:
+  - repository: WinFormTest1
+    type: github
+    endpoint: <YOUR_GITHUB_SERVICE_CONNECTION>
+    name: Pakrop-Toon/WinFormTest1
+    trigger:
+      branches:
+        include:
+        - dev
+        - main
+  
+  - repository: WinFormTest2
+    type: github
+    endpoint: <YOUR_GITHUB_SERVICE_CONNECTION>
+    name: Pakrop-Toon/WinFormTest2
+    trigger:
+      branches:
+        include:
+        - dev
+        - main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'x64'
+
+steps:
+# Checkout main repository with submodules
+- checkout: self
+  submodules: true
+  persistCredentials: true
+  displayName: 'Checkout main repository with submodules'
+
+# Checkout WinFormTest1 (in case triggered by submodule)
+- checkout: WinFormTest1
+  displayName: 'Checkout WinFormTest1'
+  condition: eq(variables['Build.Repository.Name'], 'Pakrop-Toon/WinFormTest1')
+
+# Checkout WinFormTest2 (in case triggered by submodule)
+- checkout: WinFormTest2
+  displayName: 'Checkout WinFormTest2'
+  condition: eq(variables['Build.Repository.Name'], 'Pakrop-Toon/WinFormTest2')
+
+# Install .NET 9 SDK
+- task: UseDotNetCore@2
+  displayName: 'Install .NET 9 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '9.x'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+# Restore NuGet packages for WinFormsApp1
+- task: DotNetCoreCLI@2
+  displayName: 'Restore WinFormsApp1'
+  inputs:
+    command: 'restore'
+    projects: 'WinFormTest1/WinFormsApp1/WinFormsApp1.csproj'
+
+# Restore NuGet packages for WinFormsApp2
+- task: DotNetCoreCLI@2
+  displayName: 'Restore WinFormsApp2'
+  inputs:
+    command: 'restore'
+    projects: 'WinFormTest2/WinFormsApp2/WinFormsApp2.csproj'
+
+# Build WinFormsApp1
+- task: DotNetCoreCLI@2
+  displayName: 'Build WinFormsApp1'
+  inputs:
+    command: 'build'
+    projects: 'WinFormTest1/WinFormsApp1/WinFormsApp1.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+
+# Build WinFormsApp2
+- task: DotNetCoreCLI@2
+  displayName: 'Build WinFormsApp2'
+  inputs:
+    command: 'build'
+    projects: 'WinFormTest2/WinFormsApp2/WinFormsApp2.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+
+# Publish WinFormsApp1
+- task: DotNetCoreCLI@2
+  displayName: 'Publish WinFormsApp1'
+  inputs:
+    command: 'publish'
+    projects: 'WinFormTest1/WinFormsApp1/WinFormsApp1.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/WinFormsApp1 --no-build'
+    publishWebProjects: false
+    zipAfterPublish: false
+
+# Publish WinFormsApp2
+- task: DotNetCoreCLI@2
+  displayName: 'Publish WinFormsApp2'
+  inputs:
+    command: 'publish'
+    projects: 'WinFormTest2/WinFormsApp2/WinFormsApp2.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/WinFormsApp2 --no-build'
+    publishWebProjects: false
+    zipAfterPublish: false
+
+# Publish build artifacts
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
